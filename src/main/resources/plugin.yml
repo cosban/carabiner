@@ -1,0 +1,5 @@
+name: carabiner
+main: net.cosban.carabiner.Carabiner
+version: build-number
+author: cosban
+#website: http://cosban.net
