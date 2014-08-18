@@ -9,7 +9,6 @@ public class CarabinerEvent extends Event {
 	private List<String> alts;
 
 	public CarabinerEvent(String playerName, List<String> alts) {
-		System.out.println("I HAVE BEEN MADE");
 		this.playerName = playerName;
 		this.alts = alts;
 	}

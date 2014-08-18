@@ -27,7 +27,7 @@ public class KickAlts extends CarabinerCommand {
 		if (args.length < 1) {
 			sender.sendMessage(new TextComponent(ChatColor.RED + getSyntax()));
 		} else if (args.length == 1) {
-			for (String username : CarabinerAPI.listAltUsers(args[0])) {
+			for (String username : CarabinerAPI.listAlts(args[0])) {
 				SnipAPI.kickPlayer(username, "Alt of" + args[0], sender);
 			}
 			for (String ip : CarabinerAPI.listConnections(args[0])) {
@@ -38,7 +38,7 @@ public class KickAlts extends CarabinerCommand {
 			for (int i = 1; i < args.length; i++)
 				message = message + args[i] + " ";
 			message = message.trim();
-			for (String username : CarabinerAPI.listAltUsers(args[0])) {
+			for (String username : CarabinerAPI.listAlts(args[0])) {
 				SnipAPI.kickPlayer(username, message, sender);
 			}
 			for (String ip : CarabinerAPI.listConnections(args[0])) {

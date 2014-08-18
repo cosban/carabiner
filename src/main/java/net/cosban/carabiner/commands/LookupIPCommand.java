@@ -46,7 +46,8 @@ public class LookupIPCommand extends CarabinerCommand {
 						+ "The following addresses have been used by "
 						+ ChatColor.GOLD
 						+ args[0]));
-				sender.sendMessage(new TextComponent(ChatColor.GOLD + m.substring(m.lastIndexOf(","), m.length())));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD
+						+ m.substring(m.lastIndexOf(","), m.length())));
 			} else {
 				sender.sendMessage(new TextComponent(ChatColor.GREEN
 						+ "No addresses were found for "

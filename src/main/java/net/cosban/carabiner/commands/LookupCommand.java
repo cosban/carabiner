@@ -28,7 +28,7 @@ public class LookupCommand extends CarabinerCommand {
 		if (args.length < 1 || args.length > 1) {
 			sender.sendMessage(new TextComponent(ChatColor.RED + getSyntax()));
 		} else if (args.length == 1) {
-			List<String> users = CarabinerAPI.listAltUsers(args[0]);
+			List<String> users = CarabinerAPI.listAlts(args[0]);
 			if (users.size() > 1) {
 				String m = "";
 				for (String s : users) {
@@ -38,7 +38,8 @@ public class LookupCommand extends CarabinerCommand {
 						+ "The following users are alts of "
 						+ ChatColor.GOLD
 						+ args[0]));
-				sender.sendMessage(new TextComponent(ChatColor.GOLD + m.substring(m.lastIndexOf(","), m.length())));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD
+						+ m.substring(m.lastIndexOf(","), m.length())));
 			} else {
 				sender.sendMessage(new TextComponent(ChatColor.GREEN
 						+ "No alts found for "

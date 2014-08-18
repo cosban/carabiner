@@ -17,17 +17,22 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class Carabiner extends Plugin {
-	protected static Logger            logger;
-	private static   String            version;
-	private static   Debugger          debug;
-	private static   FileManager       files;
-	private static   SQLReader         reader;
-	private static   SQLWriter         writer;
-	private static   boolean           connected;
-	private          SQLConnectionPool pool;
+	public static  Logger            logger;
+	private static String            version;
+	private static Debugger          debug;
+	private static FileManager       files;
+	private static SQLReader         reader;
+	private static SQLWriter         writer;
+	private static boolean           connected;
+	private static Carabiner         instance;
+	private        SQLConnectionPool pool;
 
 	public static String getVersion() {
 		return version;
+	}
+
+	public static Carabiner getInstance() {
+		return instance;
 	}
 
 	public static ConfigurationFile getConfig() {
@@ -51,6 +56,7 @@ public class Carabiner extends Plugin {
 	}
 
 	public void onEnable() {
+		instance = this;
 		version = getDescription().getVersion();
 		files = new FileManager(getClass(), "./plugins/snip/alts/");
 		debug = new Debugger(getClass().getName(), getConfig().toUseDebug());
@@ -66,7 +72,7 @@ public class Carabiner extends Plugin {
 		}
 
 		registerCommands();
-		getProxy().getPluginManager().registerListener(this, new CarabinerListener());
+		getProxy().getPluginManager().registerListener(instance, new CarabinerListener());
 		debug.debug(getClass(), "Connecting to MySQL... "
 				+ getConfig().getUsername()
 				+ "@"
@@ -79,10 +85,10 @@ public class Carabiner extends Plugin {
 			} else {
 				debug.debug(getClass(), "Connected to MySQL database.");
 			}
-			ProxyServer.getInstance().getScheduler().runAsync(this, pool.getCloser());
+			ProxyServer.getInstance().getScheduler().runAsync(instance, pool.getCloser());
 			reader = SQLReader.getManager(this);
 			writer = SQLWriter.getManager(this);
-			ProxyServer.getInstance().getScheduler().schedule(this, writer, 1, 1, TimeUnit.SECONDS);
+			ProxyServer.getInstance().getScheduler().schedule(instance, writer, 1, 1, TimeUnit.SECONDS);
 		} catch (ClassNotFoundException e) {
 			connected = false;
 			debug.debug(getClass(), e);
@@ -132,7 +138,8 @@ public class Carabiner extends Plugin {
 						String perms = getCommandStructure(c).permission();
 						CarabinerCommand com = (CarabinerCommand) c.getConstructor(String.class, String.class, String[].class).newInstance(name, perms, aliases);
 						ProxyServer.getInstance().getPluginManager().registerCommand(this, com);
-						debug().debug(this.getClass(), "Registered command: " + name);
+						debug().debug(this.getClass(), "Registered command: "
+								+ name);
 					}
 				}
 			} catch (Exception e) {
@@ -141,11 +148,13 @@ public class Carabiner extends Plugin {
 		}
 	}
 
-	public CommandBase getCommandStructure(Class<?> c) throws NoSuchMethodException, SecurityException {
+	private CommandBase getCommandStructure(Class<?> c)
+			throws NoSuchMethodException, SecurityException {
 		return c.getConstructor(String.class).getAnnotation(CommandBase.class);
 	}
 
-	public CommandBase getCommandStructure(CarabinerCommand com) throws NoSuchMethodException, SecurityException {
+	public CommandBase getCommandStructure(CarabinerCommand com)
+			throws NoSuchMethodException, SecurityException {
 		return getCommandStructure(com.getClass());
 	}
 }

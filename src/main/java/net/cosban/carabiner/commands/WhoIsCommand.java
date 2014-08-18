@@ -30,7 +30,9 @@ public class WhoIsCommand extends CarabinerCommand {
 		} else if (args.length == 1) {
 			ProxiedPlayer player = ProxyServer.getInstance().getPlayer(args[0]);
 			if (player != null) {
-				sender.sendMessage(new TextComponent(ChatColor.GOLD + player.getName() + " IS ONLINE"));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD
+						+ player.getName()
+						+ " IS ONLINE"));
 				sender.sendMessage(new TextComponent(ChatColor.GOLD
 						+ "IP Address    : "
 						+ player.getAddress().getAddress().getHostAddress()));

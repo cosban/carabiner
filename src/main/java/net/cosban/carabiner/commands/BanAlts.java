@@ -1,11 +1,15 @@
 package net.cosban.carabiner.commands;
 
 import net.cosban.carabiner.CarabinerAPI;
+import net.cosban.snip.Snip;
 import net.cosban.snip.api.SnipAPI;
 import net.cosban.utils.commands.CommandBase;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class BanAlts extends CarabinerCommand {
 
@@ -27,22 +31,30 @@ public class BanAlts extends CarabinerCommand {
 		if (args.length < 1) {
 			sender.sendMessage(new TextComponent(ChatColor.RED + getSyntax()));
 		} else if (args.length == 1) {
-			for (String username : CarabinerAPI.listAltUsers(args[0])) {
-				SnipAPI.ban(username, "Alt of" + args[0], sender);
+			for (String username : CarabinerAPI.listAlts(args[0])) {
+				SnipAPI.altBan(username, sender);
 			}
 			for (String ip : CarabinerAPI.listConnections(args[0])) {
-				SnipAPI.ban(ip, "Address used by banned user" + args[0], sender);
+				try {
+					SnipAPI.ban(InetAddress.getByName(ip), sender);
+				} catch (UnknownHostException e) {
+					Snip.debug().debug(getClass(), e);
+				}
 			}
 		} else if (args.length >= 2) {
 			String message = "";
 			for (int i = 1; i < args.length; i++)
 				message = message + args[i] + " ";
 			message = message.trim();
-			for (String username : CarabinerAPI.listAltUsers(args[0])) {
-				SnipAPI.ban(username, message, sender);
+			for (String username : CarabinerAPI.listAlts(args[0])) {
+				SnipAPI.altBan(username, message, sender);
 			}
 			for (String ip : CarabinerAPI.listConnections(args[0])) {
-				SnipAPI.ban(ip, message, sender);
+				try {
+					SnipAPI.ban(InetAddress.getByName(ip), sender);
+				} catch (UnknownHostException e) {
+					Snip.debug().debug(getClass(), e);
+				}
 			}
 		}
 	}
