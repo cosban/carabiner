@@ -205,12 +205,12 @@ public class SQLWriter extends TimerTask {
 					+ "');";
 		}
 
-		private final String table = prefix + "alts";
-
 		@Override
 		public State getState() {
 			return state;
-		}
+		}		private final String table = prefix + "alts";
+
+
 
 	}
 }

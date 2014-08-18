@@ -17,7 +17,7 @@ public class CarabinerAPI {
 	 * user
 	 */
 	public static List<String> listAlts(String username) {
-		return listAlts(username, new ArrayList<String>(), 1);
+		return listAlts(username, new ArrayList<String>(), Carabiner.getConfig().getDegrees());
 	}
 
 	/**
@@ -37,17 +37,20 @@ public class CarabinerAPI {
 	 */
 	public static List<String> listAlts(String username,
 			ArrayList<String> users, int degrees) {
-		users.add(username);
-		if (degrees > 0) {
-			for (String ip : listConnections(username)) {
-				for (String t : listUsers(ip)) {
-					if (!users.contains(t)) {
-						listAlts(t, users, degrees - 1);
+		if (isConnected()) {
+			users.add(username);
+			if (degrees > 0) {
+				for (String ip : listConnections(username)) {
+					for (String t : listUsers(ip)) {
+						if (!users.contains(t)) {
+							listAlts(t, users, degrees - 1);
+						}
 					}
 				}
 			}
+			return users;
 		}
-		return users;
+		return new ArrayList<String>();
 	}
 
 	/**
@@ -57,7 +60,10 @@ public class CarabinerAPI {
 	 * @return a list of alts that have used this address
 	 */
 	public static List<String> listUsers(String address) {
-		return Carabiner.getReader().getNamesFromAddress(address);
+		if (isConnected()) {
+			return Carabiner.getReader().getNamesFromAddress(address);
+		}
+		return new ArrayList<String>();
 	}
 
 	/**
@@ -79,7 +85,10 @@ public class CarabinerAPI {
 	 * @return a list of ip addresses used by this specific user
 	 */
 	public static List<String> listConnections(String username) {
-		return Carabiner.getReader().getAddressesFromName(username);
+		if (isConnected()) {
+			return Carabiner.getReader().getAddressesFromName(username);
+		}
+		return new ArrayList<String>();
 	}
 
 	//	public static List<String> listAltsByInetAddress(String username) {
@@ -106,7 +115,9 @@ public class CarabinerAPI {
 	 * 		the player to add to the db
 	 */
 	public static void addEntry(ProxiedPlayer player) {
-		Carabiner.getWriter().queueNewAlt(player);
+		if (isConnected()) {
+			Carabiner.getWriter().queueNewAlt(player);
+		}
 	}
 
 	/**
@@ -119,7 +130,10 @@ public class CarabinerAPI {
 	 * database
 	 */
 	public static boolean containsUser(String username, String address) {
-		return Carabiner.getReader().exists(username, address);
+		if (isConnected()) {
+			return Carabiner.getReader().exists(username, address);
+		}
+		return false;
 	}
 
 	/**
@@ -150,7 +164,9 @@ public class CarabinerAPI {
 	 * 		whether to ignore them or not
 	 */
 	public static void setIgnoreState(ProxiedPlayer player, boolean toIgnore) {
-		Carabiner.getWriter().queueUpdateAlt(player, toIgnore);
+		if (isConnected()) {
+			Carabiner.getWriter().queueUpdateAlt(player, toIgnore);
+		}
 	}
 
 	/**
@@ -160,7 +176,10 @@ public class CarabinerAPI {
 	 * @return true if the account is to be ignored
 	 */
 	public static boolean toIgnore(String username) {
-		return Carabiner.getReader().getToIgnore(username);
+		if (isConnected()) {
+			return Carabiner.getReader().getToIgnore(username);
+		}
+		return false;
 	}
 
 	/**

@@ -18,6 +18,7 @@ public class ConfigurationFile extends UtilFile {
 							+ Carabiner.getVersion()
 							+ " when this file was generated");
 			ini.set("config", "debug", "false");
+			ini.set("config", "degrees", "3");
 		}
 		if (!ini.hasSection("mysql")) {
 			ini.addSection("mysql");
@@ -35,9 +36,8 @@ public class ConfigurationFile extends UtilFile {
 		return Boolean.valueOf(ini.get("config", "debug"));
 	}
 
-	public void setToUseDebug(boolean debug) {
-		ini.set("config", "debug", String.valueOf(debug));
-		files.save(this);
+	public int getDegrees() {
+		return Integer.valueOf(ini.get("config", "degrees"));
 	}
 
 	public String getHostname() {
