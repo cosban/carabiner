@@ -30,9 +30,7 @@ public class WhoIsCommand extends CarabinerCommand {
 		} else if (args.length == 1) {
 			ProxiedPlayer player = ProxyServer.getInstance().getPlayer(args[0]);
 			if (player != null) {
-				sender.sendMessage(new TextComponent(ChatColor.GOLD
-						+ player.getName()
-						+ " IS ONLINE"));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD + player.getName() + " IS ONLINE"));
 				sender.sendMessage(new TextComponent(ChatColor.GOLD
 						+ "IP Address    : "
 						+ player.getAddress().getAddress().getHostAddress()));
@@ -42,20 +40,14 @@ public class WhoIsCommand extends CarabinerCommand {
 				sender.sendMessage(new TextComponent(ChatColor.GOLD
 						+ "UUID          : "
 						+ player.getUniqueId().toString()));
-				sender.sendMessage(new TextComponent(ChatColor.GOLD
-						+ "Current Ping  : "
-						+ player.getPing()));
-				sender.sendMessage(new TextComponent(ChatColor.GOLD
-						+ "Sorry... this command sucks ass right now "));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD + "Current Ping  : " + player.getPing()));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD + "Sorry... this command sucks ass right now "));
 			} else {
 				sender.sendMessage(new TextComponent(ChatColor.GOLD
 						+ args[0]
 						+ " IS OFFLINE (or has never logged in)"));
-				sender.sendMessage(new TextComponent(ChatColor.GOLD
-						+ "Ban Status    : "
-						+ SnipAPI.isbanned(args[0])));
-				sender.sendMessage(new TextComponent(ChatColor.GOLD
-						+ "Sorry... this command sucks ass right now "));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD + "Ban Status    : " + SnipAPI.isbanned(args[0])));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD + "Sorry... this command sucks ass right now "));
 			}
 		}
 	}

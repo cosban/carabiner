@@ -13,7 +13,8 @@ public class ConfigurationFile extends UtilFile {
 		if (!ini.hasSection("config")) {
 			ini.addSection("config");
 			ini.addComment("config",
-					"This is the configuration file, read the instructions located at cosban.net for more information\n"
+					"This is the configuration file, read the instructions located at cosban.net for more " +
+							"information\n"
 							+ "You were running Carabiner v"
 							+ Carabiner.getVersion()
 							+ " when this file was generated");

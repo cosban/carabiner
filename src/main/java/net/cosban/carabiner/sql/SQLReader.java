@@ -16,8 +16,7 @@ public class SQLReader {
 	private SQLReader(Carabiner instance) {
 		plugin = instance;
 		ConfigurationFile config = Carabiner.getConfig();
-		String prefix = config.getPrefix() != "" ? config.getPrefix()
-				+ "_" : "";
+		String prefix = config.getPrefix() != "" ? config.getPrefix() + "_" : "";
 		altsTable = prefix + "alts";
 	}
 
@@ -32,11 +31,7 @@ public class SQLReader {
 	}
 
 	public ArrayList<String> getNamesFromUUID(String uuid) {
-		return runStringQuery("SELECT player FROM `"
-				+ altsTable
-				+ "` WHERE (playerid='"
-				+ uuid
-				+ "');", "player");
+		return runStringQuery("SELECT player FROM `" + altsTable + "` WHERE (playerid='" + uuid + "');", "player");
 	}
 
 	public String getUUIDFromName(String name) {
@@ -49,19 +44,11 @@ public class SQLReader {
 	}
 
 	public ArrayList<String> getNamesFromAddress(String address) {
-		return runStringQuery("SELECT player FROM `"
-				+ altsTable
-				+ "` WHERE (address='"
-				+ address
-				+ "');", "player");
+		return runStringQuery("SELECT player FROM `" + altsTable + "` WHERE (address='" + address + "');", "player");
 	}
 
 	public ArrayList<String> getAddressesFromName(String name) {
-		return runStringQuery("SELECT address FROM `"
-				+ altsTable
-				+ "` WHERE (player='"
-				+ name
-				+ "');", "address");
+		return runStringQuery("SELECT address FROM `" + altsTable + "` WHERE (player='" + name + "');", "address");
 	}
 
 	public boolean exists(String name, String address) {
@@ -77,11 +64,7 @@ public class SQLReader {
 	}
 
 	public boolean getToIgnore(String name) {
-		return runBooleanQuery("SELECT track FROM `"
-				+ altsTable
-				+ "` WHERE (player='"
-				+ name
-				+ "');");
+		return runBooleanQuery("SELECT toignore FROM `" + altsTable + "` WHERE (player='" + name + "');");
 	}
 
 	public ArrayList<String> runStringQuery(String query, String column) {

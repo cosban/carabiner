@@ -33,13 +33,12 @@ public class SQLWriter extends TimerTask {
 			final DatabaseMetaData dbm = c.getMetaData();
 			final Statement state = c.createStatement();
 			c.setAutoCommit(true);
-			verifyTable(dbm, state, prefix + "alts",
-					"(uid INT UNSIGNED AUTO_INCREMENT NOT NULL,"
-							+ " playerid varchar(36) NOT NULL,"
-							+ " player varchar(32) NOT NULL,"
-							+ " address varchar(255) NOT NULL,"
-							+ " toignore TINYINT(1) NOT NULL DEFAULT 0,"
-							+ " PRIMARY KEY (uid));");
+			verifyTable(dbm, state, prefix + "alts", "(uid INT UNSIGNED AUTO_INCREMENT NOT NULL,"
+					+ " playerid varchar(36) NOT NULL,"
+					+ " player varchar(32) NOT NULL,"
+					+ " address varchar(255) NOT NULL,"
+					+ " toignore TINYINT(1) NOT NULL DEFAULT 0,"
+					+ " PRIMARY KEY (uid));");
 			state.close();
 			c.close();
 		} catch (SQLException e) {
@@ -57,19 +56,14 @@ public class SQLWriter extends TimerTask {
 		return manager;
 	}
 
-	private void verifyTable(DatabaseMetaData dbm, Statement state,
-			String table, String query) throws SQLException {
+	private void verifyTable(DatabaseMetaData dbm, Statement state, String table, String query) throws SQLException {
 		if (!dbm.getTables(null, null, table, null).next()) {
 			Carabiner.debug().debug(getClass(), "Creating " + table + " table");
 			state.execute("CREATE TABLE `" + table + "` " + query);
 			if (!dbm.getTables(null, null, table, null).next())
-				throw new SQLException("Table "
-						+ table
-						+ " not found and failed to create");
+				throw new SQLException("Table " + table + " not found and failed to create");
 		} else {
-			Carabiner.debug().debug(getClass(), "Verified "
-					+ table
-					+ " table, no need to create");
+			Carabiner.debug().debug(getClass(), "Verified " + table + " table, no need to create");
 		}
 	}
 
@@ -91,16 +85,14 @@ public class SQLWriter extends TimerTask {
 		final Connection c = plugin.getConnection();
 		Statement state = null;
 		if (queue.size() >= 10000) {
-			Carabiner.debug().debug(getClass(), "Queue overloaded. Size: "
-					+ queue.size());
+			Carabiner.debug().debug(getClass(), "Queue overloaded. Size: " + queue.size());
 		}
 		try {
 			if (c == null) return;
 			c.setAutoCommit(false);
 			state = c.createStatement();
 			final long start = System.currentTimeMillis();
-			while (!queue.isEmpty() && (System.currentTimeMillis() - start
-					< 1000)) {
+			while (!queue.isEmpty() && (System.currentTimeMillis() - start < 1000)) {
 				final Row r = queue.poll();
 				if (r == null) continue;
 				try {
@@ -179,38 +171,32 @@ public class SQLWriter extends TimerTask {
 			return "INSERT INTO `"
 					+ table
 					+ "` (playerid, player, address, toignore) VALUES ('"
-					+ player.getUniqueId().toString() + "', '"
-					+ player.getName() + "', '"
-					+ player.getAddress().getAddress().getHostAddress() + "', "
-					+ toignore + ");";
+					+ player.getUniqueId().toString()
+					+ "', '"
+					+ player.getName()
+					+ "', '"
+					+ player.getAddress().getAddress().getHostAddress()
+					+ "', "
+					+ toignore
+					+ ");";
 		}
 
 		@Override
 		public String getUpdateStatement() {
-			return "UPDATE `"
-					+ table
-					+ "` SET toignore="
-					+ toignore
-					+ " WHERE player="
-					+ player.getName()
-					+ ";";
+			return "UPDATE `" + table + "` SET toignore=" + toignore + " WHERE player=" + player.getName() + ";";
 		}
 
 		@Override
 		public String getDeleteStatement() {
-			return "DELETE FROM `"
-					+ table
-					+ "` WHERE (player='"
-					+ player.getName()
-					+ "');";
+			return "DELETE FROM `" + table + "` WHERE (player='" + player.getName() + "');";
 		}
 
 		@Override
 		public State getState() {
 			return state;
-		}		private final String table = prefix + "alts";
+		}
 
-
+		private final String table = prefix + "alts";
 
 	}
 }

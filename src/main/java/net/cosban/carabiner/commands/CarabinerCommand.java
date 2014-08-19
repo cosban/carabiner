@@ -43,16 +43,14 @@ public class CarabinerCommand extends Command {
 			switch (args[0]) {
 				case "ignore":
 				default:
-					sender.sendMessage(new TextComponent(ChatColor.GREEN
-							+ "This command is under construction"));
+					sender.sendMessage(new TextComponent(ChatColor.GREEN + "This command is under construction"));
 			}
 		}
 	}
 
 	public boolean handlePerms(CommandSender sender, Command command) {
 		if (!checkPerms(sender, command)) {
-			sender.sendMessage(new TextComponent(ChatColor.RED
-					+ "You do not have permission for this command!"));
+			sender.sendMessage(new TextComponent(ChatColor.RED + "You do not have permission for this command!"));
 		}
 		return checkPerms(sender, command);
 	}
@@ -69,8 +67,7 @@ public class CarabinerCommand extends Command {
 		for (Method method : getClass().getMethods())
 			if (method.isAnnotationPresent(ParameterBase.class)) {
 				ParameterBase annote = (ParameterBase) method.getAnnotation(ParameterBase.class);
-				if (getParams().get(annote.name()) == null)
-					getParams().put(annote.name(), method);
+				if (getParams().get(annote.name()) == null) getParams().put(annote.name(), method);
 			}
 	}
 

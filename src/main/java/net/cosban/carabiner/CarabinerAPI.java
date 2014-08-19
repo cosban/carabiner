@@ -13,20 +13,18 @@ public class CarabinerAPI {
 	 * @param username
 	 * 		the username to lookup
 	 *
-	 * @return a list of direct alts that have used the same connection as the
-	 * user
+	 * @return a list of direct alts that have used the same connection as the user
 	 */
 	public static List<String> listAlts(String username) {
 		return listAlts(username, new ArrayList<String>(), Carabiner.getConfig().getDegrees());
 	}
 
 	/**
-	 * Creates a list of alts based on connected accounts which may not be
-	 * directly connected. If two alts (an original and a second) have joined
-	 * using the same connection, they are said to have a direct connection, if
-	 * a different alt connects to a connection that only the second alt has
-	 * previously used, that would be one degree of separation from the
-	 * original. //TODO: convert this to use UUID strings instead of usernames
+	 * Creates a list of alts based on connected accounts which may not be directly connected. If two alts (an original
+	 * and a second) have joined using the same connection, they are said to have a direct connection, if a different
+	 * alt connects to a connection that only the second alt has previously used,
+	 * that would be one degree of separation
+	 * from the original. //TODO: convert this to use UUID strings instead of usernames
 	 *
 	 * @param username
 	 * 		the username to look up
@@ -35,9 +33,8 @@ public class CarabinerAPI {
 	 *
 	 * @return a list of alts within the specified degrees of separation to find
 	 */
-	public static List<String> listAlts(String username,
-			ArrayList<String> users, int degrees) {
-		if (isConnected()) {
+	public static List<String> listAlts(String username, ArrayList<String> users, int degrees) {
+		if (checkConnection()) {
 			users.add(username);
 			if (degrees > 0) {
 				for (String ip : listConnections(username)) {
@@ -60,7 +57,7 @@ public class CarabinerAPI {
 	 * @return a list of alts that have used this address
 	 */
 	public static List<String> listUsers(String address) {
-		if (isConnected()) {
+		if (checkConnection()) {
 			return Carabiner.getReader().getNamesFromAddress(address);
 		}
 		return new ArrayList<String>();
@@ -85,7 +82,7 @@ public class CarabinerAPI {
 	 * @return a list of ip addresses used by this specific user
 	 */
 	public static List<String> listConnections(String username) {
-		if (isConnected()) {
+		if (checkConnection()) {
 			return Carabiner.getReader().getAddressesFromName(username);
 		}
 		return new ArrayList<String>();
@@ -115,7 +112,7 @@ public class CarabinerAPI {
 	 * 		the player to add to the db
 	 */
 	public static void addEntry(ProxiedPlayer player) {
-		if (isConnected()) {
+		if (checkConnection()) {
 			Carabiner.getWriter().queueNewAlt(player);
 		}
 	}
@@ -126,20 +123,19 @@ public class CarabinerAPI {
 	 * @param address
 	 * 		the ipv4 address to verify
 	 *
-	 * @return true if the user and ipv4 address are already entered into the
-	 * database
+	 * @return true if the user and ipv4 address are already entered into the database
 	 */
 	public static boolean containsUser(String username, String address) {
-		if (isConnected()) {
+		if (checkConnection()) {
 			return Carabiner.getReader().exists(username, address);
 		}
 		return false;
 	}
 
 	/**
-	 * Sets whether to notify admins of alt accounts when this specific account
-	 * logs in. If any alts of this account log in, it will still notify admins
-	 * unless they are set to be ignored as well
+	 * Sets whether to notify admins of alt accounts when this specific account logs in. If any alts of this account
+	 * log
+	 * in, it will still notify admins unless they are set to be ignored as well
 	 *
 	 * @param username
 	 * 		the username of the player
@@ -154,9 +150,9 @@ public class CarabinerAPI {
 	}
 
 	/**
-	 * Sets whether to notify admins of alt accounts when this specific account
-	 * logs in. If any alts of this account log in, it will still notify admins
-	 * unless they are set to be ignored as well
+	 * Sets whether to notify admins of alt accounts when this specific account logs in. If any alts of this account
+	 * log
+	 * in, it will still notify admins unless they are set to be ignored as well
 	 *
 	 * @param player
 	 * 		the player
@@ -164,7 +160,7 @@ public class CarabinerAPI {
 	 * 		whether to ignore them or not
 	 */
 	public static void setIgnoreState(ProxiedPlayer player, boolean toIgnore) {
-		if (isConnected()) {
+		if (checkConnection()) {
 			Carabiner.getWriter().queueUpdateAlt(player, toIgnore);
 		}
 	}
@@ -176,17 +172,25 @@ public class CarabinerAPI {
 	 * @return true if the account is to be ignored
 	 */
 	public static boolean toIgnore(String username) {
-		if (isConnected()) {
+		if (checkConnection()) {
 			return Carabiner.getReader().getToIgnore(username);
 		}
 		return false;
 	}
 
 	/**
-	 * @return true if the plugin is connected to a sql db
+	 * Checks whether the plugin is connected to a sql database. If it is not, it then checks whether it should attempt
+	 * to reconnect. Otherwise it returns false
+	 *
+	 * @return true if the plugin is connected to a sql database
 	 */
-	public static boolean isConnected() {
-		return Carabiner.isConnected();
+	public static boolean checkConnection() {
+		if (Carabiner.isConnected()) {
+			return true;
+		} else if (Carabiner.toStayConnected()) {
+			Carabiner.getInstance().connect();
+			return Carabiner.isConnected();
+		}
+		return false;
 	}
-
 }

@@ -25,6 +25,7 @@ public class Carabiner extends Plugin {
 	private static SQLWriter         writer;
 	private static boolean           connected;
 	private static Carabiner         instance;
+	private static boolean           stayConnected;
 	private        SQLConnectionPool pool;
 
 	public static String getVersion() {
@@ -43,6 +44,10 @@ public class Carabiner extends Plugin {
 		return debug;
 	}
 
+	public static boolean toStayConnected() {
+		return stayConnected;
+	}
+
 	public static boolean isConnected() {
 		return connected;
 	}
@@ -53,6 +58,30 @@ public class Carabiner extends Plugin {
 
 	public static SQLWriter getWriter() {
 		return writer;
+	}
+
+	public void connect() {
+		debug.debug(getClass(), "Connecting to MySQL... " + getConfig().getUsername() + "@" + getConfig().getURL());
+		try {
+			pool = new SQLConnectionPool(getConfig().getURL(), getConfig().getUsername(), getConfig().getPassword());
+			Connection c = getConnection();
+			if (c == null) {
+				connected = false;
+			} else {
+				debug.debug(getClass(), "Connected to MySQL database.");
+			}
+			getProxy().getScheduler().runAsync(instance, pool.getCloser());
+			reader = SQLReader.getManager(this);
+			writer = SQLWriter.getManager(this);
+			getProxy().getScheduler().schedule(instance, writer, 1, 1, TimeUnit.SECONDS);
+		} catch (ClassNotFoundException e) {
+			connected = false;
+			debug.debug(getClass(), e);
+		}
+		if (!connected) {
+			logger.warning("There was an issue connecting to the MySQL server.");
+			logger.warning("It is HIGHLY encouraged that you fix your database connection!");
+		}
 	}
 
 	public void onEnable() {
@@ -72,31 +101,10 @@ public class Carabiner extends Plugin {
 		}
 
 		registerCommands();
+
 		getProxy().getPluginManager().registerListener(instance, new CarabinerListener());
-		debug.debug(getClass(), "Connecting to MySQL... "
-				+ getConfig().getUsername()
-				+ "@"
-				+ getConfig().getURL());
-		try {
-			pool = new SQLConnectionPool(getConfig().getURL(), getConfig().getUsername(), getConfig().getPassword());
-			Connection c = getConnection();
-			if (c == null) {
-				connected = false;
-			} else {
-				debug.debug(getClass(), "Connected to MySQL database.");
-			}
-			ProxyServer.getInstance().getScheduler().runAsync(instance, pool.getCloser());
-			reader = SQLReader.getManager(this);
-			writer = SQLWriter.getManager(this);
-			ProxyServer.getInstance().getScheduler().schedule(instance, writer, 1, 1, TimeUnit.SECONDS);
-		} catch (ClassNotFoundException e) {
-			connected = false;
-			debug.debug(getClass(), e);
-		}
-		if (!connected) {
-			logger.warning("There was an issue connecting to the MySQL server.");
-			logger.warning("It is HIGHLY encouraged that you fix your database connection!");
-		}
+		stayConnected = true;
+		connect();
 	}
 
 	public void onDisable() {
@@ -129,17 +137,18 @@ public class Carabiner extends Plugin {
 	}
 
 	private void registerCommands() {
-		for (Class<?> c : ReflectiveClassStruct.getClassesForPackage(getClass(), "net.cosban.scct.commands")) {
+		//TODO: non literal package names
+		for (Class<?> c : ReflectiveClassStruct.getClassesForPackage(getClass(), "net.cosban.carabiner.commands")) {
 			try {
 				if (ReflectiveClassStruct.containsConstructor(c, String.class)) {
 					if (c.getConstructor(String.class).isAnnotationPresent(CommandBase.class)) {
 						String name = getCommandStructure(c).name();
 						String[] aliases = getCommandStructure(c).aliases();
 						String perms = getCommandStructure(c).permission();
-						CarabinerCommand com = (CarabinerCommand) c.getConstructor(String.class, String.class, String[].class).newInstance(name, perms, aliases);
+						CarabinerCommand com = (CarabinerCommand) c.getConstructor(String.class, String.class,
+								String[].class).newInstance(name, perms, aliases);
 						ProxyServer.getInstance().getPluginManager().registerCommand(this, com);
-						debug().debug(this.getClass(), "Registered command: "
-								+ name);
+						debug().debug(this.getClass(), "Registered command: " + name);
 					}
 				}
 			} catch (Exception e) {
@@ -148,13 +157,11 @@ public class Carabiner extends Plugin {
 		}
 	}
 
-	private CommandBase getCommandStructure(Class<?> c)
-			throws NoSuchMethodException, SecurityException {
+	private CommandBase getCommandStructure(Class<?> c) throws NoSuchMethodException, SecurityException {
 		return c.getConstructor(String.class).getAnnotation(CommandBase.class);
 	}
 
-	public CommandBase getCommandStructure(CarabinerCommand com)
-			throws NoSuchMethodException, SecurityException {
+	public CommandBase getCommandStructure(CarabinerCommand com) throws NoSuchMethodException, SecurityException {
 		return getCommandStructure(com.getClass());
 	}
 }
