@@ -8,6 +8,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
+import java.net.InetAddress;
 import java.util.List;
 
 public class LookupIPCommand extends CarabinerCommand {
@@ -36,11 +37,11 @@ public class LookupIPCommand extends CarabinerCommand {
 						+ " is online and connected with: "
 						+ player.getAddress().getAddress().getHostAddress()));
 			}
-			List<String> ip = CarabinerAPI.listConnections(args[0]);
+			List<InetAddress> ip = CarabinerAPI.listConnections(args[0]);
 			if (ip.size() > 1) {
 				String m = "";
-				for (String s : ip) {
-					m += s + ", ";
+				for (InetAddress s : ip) {
+					m += s.toString() + ", ";
 				}
 				sender.sendMessage(new TextComponent(ChatColor.GREEN
 						+ "The following addresses have been used by "

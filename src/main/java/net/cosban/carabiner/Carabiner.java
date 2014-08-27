@@ -73,7 +73,6 @@ public class Carabiner extends Plugin {
 			getProxy().getScheduler().runAsync(instance, pool.getCloser());
 			reader = SQLReader.getManager(this);
 			writer = SQLWriter.getManager(this);
-			getProxy().getScheduler().schedule(instance, writer, 1, 1, TimeUnit.SECONDS);
 		} catch (ClassNotFoundException e) {
 			connected = false;
 			debug.debug(getClass(), e);

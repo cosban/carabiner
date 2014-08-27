@@ -1,13 +1,16 @@
 package net.cosban.carabiner.sql;
 
+import net.cosban.carabiner.Alt;
 import net.cosban.carabiner.Carabiner;
 import net.cosban.carabiner.files.ConfigurationFile;
 
+import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class SQLReader {
 	private final String    altsTable;
@@ -30,8 +33,16 @@ public class SQLReader {
 		return manager;
 	}
 
-	public ArrayList<String> getNamesFromUUID(String uuid) {
-		return runStringQuery("SELECT player FROM `" + altsTable + "` WHERE (playerid='" + uuid + "');", "player");
+	public ArrayList<Alt> getAlts(UUID uuid) {
+		return runAltsQuery("SELECT * FROM `" + altsTable + "` WHERE (playerid='" + uuid.toString() + "');");
+	}
+
+	public ArrayList<Alt> getAlts(String name) {
+		return runAltsQuery("SELECT * FROM `" + altsTable + "` WHERE (player='" + name + "');");
+	}
+
+	public ArrayList<Alt> getAlts(InetAddress address) {
+		return runAltsQuery("SELECT * FROM `" + altsTable + "` WHERE (address='" + address.getHostAddress() + "');");
 	}
 
 	public String getUUIDFromName(String name) {
@@ -43,28 +54,33 @@ public class SQLReader {
 				+ "');", "playerid").get(0);
 	}
 
-	public ArrayList<String> getNamesFromAddress(String address) {
-		return runStringQuery("SELECT player FROM `" + altsTable + "` WHERE (address='" + address + "');", "player");
-	}
-
-	public ArrayList<String> getAddressesFromName(String name) {
-		return runStringQuery("SELECT address FROM `" + altsTable + "` WHERE (player='" + name + "');", "address");
-	}
-
-	public boolean exists(String name, String address) {
-		// We use 'player' as a column field because anything will work, we just need to see that there are results
-		// probably not the best solution, but it will work for now
-		return runStringQuery("SELECT * FROM`"
+	public boolean exists(String name, InetAddress address) {
+		return runCountQuery("SELECT COUNT(*) FROM`"
 				+ altsTable
 				+ "` WHERE (player='"
 				+ name
 				+ "' AND address='"
-				+ address
-				+ "');", "player").size() > 0;
+				+ address.getHostAddress()
+				+ "');") > 0;
 	}
 
-	public boolean getToIgnore(String name) {
-		return runBooleanQuery("SELECT toignore FROM `" + altsTable + "` WHERE (player='" + name + "');");
+	public ArrayList<Alt> runAltsQuery(String query) {
+		final Connection c = plugin.getConnection();
+		ArrayList<Alt> alts = new ArrayList<>();
+		try {
+			Statement state = c.createStatement();
+			ResultSet rs = state.executeQuery(query);
+			while (rs.next()) {
+				alts.add(new Alt(rs.getString("player"), rs.getString("address"), rs.getString("playerid"),
+						rs.getBoolean("toignore")));
+			}
+			state.close();
+			c.close();
+			return alts;
+		} catch (SQLException e) {
+			Carabiner.debug().debug(getClass(), e);
+			return null;
+		}
 	}
 
 	public ArrayList<String> runStringQuery(String query, String column) {
@@ -87,21 +103,21 @@ public class SQLReader {
 		}
 	}
 
-	public boolean runBooleanQuery(String query) {
+	public int runCountQuery(String query){
 		final Connection c = plugin.getConnection();
+		int i = 0;
 		try {
 			Statement state = c.createStatement();
 			ResultSet rs = state.executeQuery(query);
-			ArrayList<Boolean> b = new ArrayList<>();
-			while (rs.next()) {
-				b.add(rs.getBoolean("toignore"));
+			if(rs.next()){
+				i = rs.getInt(1);
 			}
 			state.close();
 			c.close();
-			return b.contains(true);
+			return i;
 		} catch (SQLException e) {
 			Carabiner.debug().debug(getClass(), e);
-			return false;
+			return 0;
 		}
 	}
 }

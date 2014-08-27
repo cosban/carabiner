@@ -1,18 +1,16 @@
 package net.cosban.carabiner.commands;
 
+import net.cosban.carabiner.CarabinerAPI;
 import net.cosban.utils.commands.CommandBase;
-import net.cosban.utils.commands.ParameterBase;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class CarabinerCommand extends Command {
 	public Map<String, Method> params = new HashMap<>();
@@ -21,7 +19,7 @@ public class CarabinerCommand extends Command {
 			name = "carabiner",
 			params = { "ignore" },
 			description = "For plugin info and admin shit",
-			aliases = { "iptrace" },
+			aliases = { "iptrace", "alts" },
 			permission = "alts.commands.carabiner")
 	public CarabinerCommand(String name) {
 		super(name);
@@ -40,73 +38,33 @@ public class CarabinerCommand extends Command {
 		if (!getName().equals("carabiner") || args.length == 0) {
 			base(sender, args);
 		} else {
-			switch (args[0]) {
+			switch (args[0].toLowerCase()) {
 				case "ignore":
+					setIgnore(sender, true, Arrays.copyOfRange(args, 1, args.length));
+					break;
+				case "track":
+					setIgnore(sender, false, Arrays.copyOfRange(args, 1, args.length));
+					break;
 				default:
 					sender.sendMessage(new TextComponent(ChatColor.GREEN + "This command is under construction"));
 			}
 		}
 	}
 
-	public boolean handlePerms(CommandSender sender, Command command) {
-		if (!checkPerms(sender, command)) {
-			sender.sendMessage(new TextComponent(ChatColor.RED + "You do not have permission for this command!"));
+	private void setIgnore(CommandSender sender, boolean ignore, String[] args) {
+		if (args.length < 1 || args.length > 1) {
+			sender.sendMessage(new TextComponent(getSyntax()));
 		}
-		return checkPerms(sender, command);
-	}
-
-	public boolean handlePerms(CommandSender sender, String name) {
-		return handlePerms(sender, this);
-	}
-
-	public boolean checkPerms(CommandSender sender, Command command) {
-		return sender.hasPermission(command.getPermission());
-	}
-
-	public void registerParams() {
-		for (Method method : getClass().getMethods())
-			if (method.isAnnotationPresent(ParameterBase.class)) {
-				ParameterBase annote = (ParameterBase) method.getAnnotation(ParameterBase.class);
-				if (getParams().get(annote.name()) == null) getParams().put(annote.name(), method);
-			}
+		CarabinerAPI.setIgnoreState(args[0], ignore);
+		sender.sendMessage(new TextComponent(ChatColor.GREEN
+				+ "Now "
+				+ (ignore ? "IGNOR" : "TRACK")
+				+ "ING alts of "
+				+ args[0]));
 	}
 
 	public Map<String, Method> getParams() {
 		return params;
-	}
-
-	public ParameterBase getParameterBase(String s) {
-		return (ParameterBase) ((Method) getParams().get(s)).getAnnotation(ParameterBase.class);
-	}
-
-	public List<Character> getFlags(String[] args) {
-		List<Character> ch = new ArrayList<>();
-		for (String s : args) {
-			if (s.startsWith("-")) {
-				for (char c : s.toCharArray()) {
-					if (!ch.contains(c)) ch.add(c);
-				}
-			}
-		}
-		return ch;
-	}
-
-	public List<Character> getFlags(String args) {
-		List<Character> ch = new ArrayList<>();
-		if (args.startsWith("-")) {
-			for (char c : args.toCharArray()) {
-				if (!ch.contains(c)) ch.add(c);
-			}
-			return ch;
-		}
-		return null;
-	}
-
-	public int getInt(String[] args) {
-		Pattern reg = Pattern.compile("^[0-9]+$");
-		for (String s : args)
-			if (reg.matcher(s).matches()) return Integer.parseInt(s);
-		return -1;
 	}
 
 	public String getSyntax() {

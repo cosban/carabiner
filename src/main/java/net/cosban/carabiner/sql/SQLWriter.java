@@ -1,5 +1,6 @@
 package net.cosban.carabiner.sql;
 
+import net.cosban.carabiner.Alt;
 import net.cosban.carabiner.Carabiner;
 import net.cosban.carabiner.files.ConfigurationFile;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -10,11 +11,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class SQLWriter extends TimerTask {
+public class SQLWriter {
 	private final Queue<Row> queue = new LinkedList<Row>();
 	private final Lock       lock  = new ReentrantLock();
 	private final String    prefix;
@@ -68,52 +68,42 @@ public class SQLWriter extends TimerTask {
 	}
 
 	public void queueNewAlt(ProxiedPlayer player) {
-		queue.add(new AccountRow(true, player));
+		write(new AccountRow(true, player));
 	}
 
 	public void queueUpdateAlt(ProxiedPlayer player, boolean toignore) {
-		queue.add(new AccountRow(player, toignore));
+		write(new AccountRow(player, toignore));
 	}
 
 	public void queueDeleteAlt(ProxiedPlayer player) {
-		queue.add(new AccountRow(false, player));
+		write(new AccountRow(false, player));
 	}
 
-	@Override
-	public void run() {
-		if (queue.isEmpty() || !lock.tryLock()) return;
+	public void write(Row r) {
+		if (!lock.tryLock()) return;
 		final Connection c = plugin.getConnection();
 		Statement state = null;
-		if (queue.size() >= 10000) {
-			Carabiner.debug().debug(getClass(), "Queue overloaded. Size: " + queue.size());
-		}
 		try {
 			if (c == null) return;
 			c.setAutoCommit(false);
 			state = c.createStatement();
 			final long start = System.currentTimeMillis();
-			while (!queue.isEmpty() && (System.currentTimeMillis() - start < 1000)) {
-				final Row r = queue.poll();
-				if (r == null) continue;
-				try {
-					switch (r.getState()) {
-						case REMOVE:
-							state.execute(r.getDeleteStatement());
-							break;
-						case UPDATE:
-							state.execute(r.getUpdateStatement());
-							break;
-						case INSERT:
-						default:
-							state.execute(r.getInsertStatement());
-							break;
-					}
-				} catch (final SQLException e) {
-					Carabiner.debug().debug(getClass(), e);
-					break;
+			try {
+				switch (r.getState()) {
+					case REMOVE:
+						state.execute(r.getDeleteStatement());
+						break;
+					case UPDATE:
+						state.execute(r.getUpdateStatement());
+						break;
+					case INSERT:
+					default:
+						state.execute(r.getInsertStatement());
+						break;
 				}
+			} catch (final SQLException e) {
+				Carabiner.debug().debug(getClass(), e);
 			}
-			c.commit();
 		} catch (final SQLException e) {
 			Carabiner.debug().debug(getClass(), e);
 		} finally {
@@ -147,22 +137,19 @@ public class SQLWriter extends TimerTask {
 		}
 	}
 
-	private class AccountRow implements Row {
-		private ProxiedPlayer player;
-		private boolean       toignore;
-		private State         state;
+	private class AccountRow extends Alt implements Row {
+		private State state;
 
 		public AccountRow(boolean toInsert, ProxiedPlayer player) {
 			this(player, false, toInsert ? State.INSERT : State.REMOVE);
 		}
 
 		public AccountRow(ProxiedPlayer player, boolean toIgnore) {
-			this(null, toIgnore, State.UPDATE);
+			this(player, toIgnore, State.UPDATE);
 		}
 
 		public AccountRow(ProxiedPlayer player, boolean toignore, State state) {
-			this.player = player;
-			this.toignore = toignore;
+			super(player.getName(), player.getAddress().getAddress(), player.getUniqueId(), toignore);
 			this.state = state;
 		}
 
@@ -171,24 +158,24 @@ public class SQLWriter extends TimerTask {
 			return "INSERT INTO `"
 					+ table
 					+ "` (playerid, player, address, toignore) VALUES ('"
-					+ player.getUniqueId().toString()
+					+ getUUID().toString()
 					+ "', '"
-					+ player.getName()
+					+ getUsername()
 					+ "', '"
-					+ player.getAddress().getAddress().getHostAddress()
+					+ getAddress().getHostAddress()
 					+ "', "
-					+ toignore
+					+ toIgnore()
 					+ ");";
 		}
 
 		@Override
 		public String getUpdateStatement() {
-			return "UPDATE `" + table + "` SET toignore=" + toignore + " WHERE player=" + player.getName() + ";";
+			return "UPDATE `" + table + "` SET toignore=" + toIgnore() + " WHERE player=" + getUsername() + ";";
 		}
 
 		@Override
 		public String getDeleteStatement() {
-			return "DELETE FROM `" + table + "` WHERE (player='" + player.getName() + "');";
+			return "DELETE FROM `" + table + "` WHERE (player='" + getUsername() + "');";
 		}
 
 		@Override
@@ -197,6 +184,5 @@ public class SQLWriter extends TimerTask {
 		}
 
 		private final String table = prefix + "alts";
-
 	}
 }

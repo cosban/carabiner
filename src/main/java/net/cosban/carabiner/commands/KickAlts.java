@@ -1,5 +1,6 @@
 package net.cosban.carabiner.commands;
 
+import net.cosban.carabiner.Alt;
 import net.cosban.carabiner.CarabinerAPI;
 import net.cosban.snip.api.SnipAPI;
 import net.cosban.utils.commands.CommandBase;
@@ -27,22 +28,16 @@ public class KickAlts extends CarabinerCommand {
 		if (args.length < 1) {
 			sender.sendMessage(new TextComponent(ChatColor.RED + getSyntax()));
 		} else if (args.length == 1) {
-			for (String username : CarabinerAPI.listAlts(args[0])) {
-				SnipAPI.kickPlayer(username, "Alt of" + args[0], sender);
-			}
-			for (String ip : CarabinerAPI.listConnections(args[0])) {
-				SnipAPI.kickPlayer(ip, "Alt of" + args[0], sender);
+			for (Alt a : CarabinerAPI.listAlts(args[0])) {
+				SnipAPI.kickPlayer(a.getUsername(), "Alt of" + args[0], sender.getName());
 			}
 		} else if (args.length >= 2) {
 			String message = "";
 			for (int i = 1; i < args.length; i++)
 				message = message + args[i] + " ";
 			message = message.trim();
-			for (String username : CarabinerAPI.listAlts(args[0])) {
-				SnipAPI.kickPlayer(username, message, sender);
-			}
-			for (String ip : CarabinerAPI.listConnections(args[0])) {
-				SnipAPI.kickPlayer(ip, message, sender);
+			for (Alt a : CarabinerAPI.listAlts(args[0])) {
+				SnipAPI.kickPlayer(a.getUsername(), message, sender.getName());
 			}
 		}
 	}

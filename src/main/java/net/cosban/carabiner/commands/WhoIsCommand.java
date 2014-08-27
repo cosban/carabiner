@@ -46,7 +46,7 @@ public class WhoIsCommand extends CarabinerCommand {
 				sender.sendMessage(new TextComponent(ChatColor.GOLD
 						+ args[0]
 						+ " IS OFFLINE (or has never logged in)"));
-				sender.sendMessage(new TextComponent(ChatColor.GOLD + "Ban Status    : " + SnipAPI.isbanned(args[0])));
+				sender.sendMessage(new TextComponent(ChatColor.GOLD + "Ban Status    : " + SnipAPI.isBanned(args[0])));
 				sender.sendMessage(new TextComponent(ChatColor.GOLD + "Sorry... this command sucks ass right now "));
 			}
 		}
